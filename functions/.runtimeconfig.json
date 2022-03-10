@@ -1,9 +1,12 @@
 {
-  "voiceflow": {
-    "key": "VF.61a93892c0968d001c916061.UUxj96X7C4SmolHPekrFIlg8GaMROgPaRVnpcDqofP",
-    "version": "61a938565c7fe500065b4b2b"
+  "stripe": {
+    "test": "284685063:TEST:MmJiODBiMzRjMDMw"
   },
   "telegram": {
     "token": "5089014956:AAE81N81vpMSl0Y0VTRxEsNG2N2yNyHSCEk"
+  },
+  "voiceflow": {
+    "version": "61a938565c7fe500065b4b2b",
+    "key": "VF.61a93892c0968d001c916061.UUxj96X7C4SmolHPekrFIlg8GaMROgPaRVnpcDqofP"
   }
 }
