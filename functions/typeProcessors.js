@@ -31,7 +31,6 @@ const save = async ({ id, data, db }) => {
 }
 
 const saveAnswer = async ({ id, data, db }) => {
-  console.log(data.payload)
   const { question, correct } = JSON.parse(data.payload)
   const key = `answers.${question}`
   await db
@@ -59,7 +58,6 @@ const createUser = async ({ id, from, db }) => {
 const blocks = ['Tecnologias', 'Conversas']
 const menu = async ({ id, bot, db }) => {
   const studentData = (await db.collection('students').doc(id).get()).data()
-  console.log('Student Data: ', studentData)
   let finishedBlocks = 0
   const buttons = blocks.map((blockName, index) => {
     let finished = false
@@ -71,9 +69,7 @@ const menu = async ({ id, bot, db }) => {
     return [{ text: blockName + (finished ? ' ✅' : ''), callback_data: blockName }]
   })
 
-  console.log('Length: ', studentData.finishedBlocks?.length)
   if (finishedBlocks === blocks.length) {
-    console.log('append')
     buttons.push([{ text: '📜 Emitir Certificado 📜', callback_data: 'Emitir Certificado' }])
   }
 
@@ -91,7 +87,7 @@ const pay = async ({ bot, id, STRIPE_TEST }) => {
     label: 'Certificação',
     amount: 2000
   }]
-  bot.sendInvoice(id, 'Certificação', 'Emita um certificado de conclusão ao terminar o curso', payload, STRIPE_TEST, 'pay', 'BRL', prices, {
+  bot.sendInvoice(id, 'Certificação', 'Emita um certificado de conclusão ao terminar o curso', payload, STRIPE_TEST, 'pagar', 'BRL', prices, {
     max_tip_amount: 100000,
     suggested_tip_amounts: [1000, 5000, 10000]
   })

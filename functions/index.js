@@ -17,14 +17,12 @@ const typeProcessors = require('./typeProcessors')
 
 exports.messageReceived = functions.https.onRequest(
   async (request, response) => {
-    console.log('Request Received: ', request.body)
     bot.processUpdate(request.body)
     response.sendStatus(200)
   }
 )
 
 bot.on('pre_checkout_query', async (checkoutQuery) => {
-  console.log('CHECKING OUT: ', checkoutQuery)
   const { id } = checkoutQuery
   await bot.answerPreCheckoutQuery(id, true)
 })
@@ -36,9 +34,7 @@ bot.on('callback_query', async (callbackQuery) => {
 })
 
 bot.on('message', async (msg) => {
-  const { from, text } = msg
-
-  console.log('Message received: ', msg)
+  const { from } = msg
 
   if (msg.successful_payment) {
     const id = from.id.toString()
@@ -48,11 +44,12 @@ bot.on('message', async (msg) => {
       .update({ pagamento: msg.successful_payment })
 
     await processAction('complete', from)
-
-    return
   }
+})
 
-  await processMsg(text, from)
+bot.onText(/\/start/, (msg) => {
+  const { from } = msg
+  processAction('launch', from)
 })
 
 const processAction = async (action, from) => {
@@ -70,8 +67,6 @@ const processAction = async (action, from) => {
     }
   })
 
-  console.log('voiceflow: ', response.data)
-
   for (const data of response.data) {
     const processor = typeProcessors[data.type]
     if (processor) await processor({ data, from, id: from.id.toString(), bot, db, STRIPE_TEST })
@@ -79,9 +74,6 @@ const processAction = async (action, from) => {
 }
 
 const processMsg = async (text, from) => {
-  console.log('RECEIVED: ', text)
-  console.log('FROM: ', from)
-
   const response = await axios({
     method: 'POST',
     baseURL: 'https://general-runtime.voiceflow.com',
@@ -99,8 +91,6 @@ const processMsg = async (text, from) => {
       }
     }
   })
-
-  console.log('voiceflow: ', response.data)
 
   for (const data of response.data) {
     const processor = typeProcessors[data.type]
