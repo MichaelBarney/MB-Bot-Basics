@@ -44,10 +44,12 @@ const finishBlock = async ({ id, data, db }) => {
 }
 
 const createUser = async ({ id, from, db }) => {
-  db
+  console.log('DBG: started creating user')
+  await db
     .collection('students')
     .doc(id)
     .set({ name: from.first_name }, { merge: true })
+  console.log('DBG: finished creating user')
 }
 
 const blocks = ['Tecnologias Importantes', 'Construindo Conversas', 'Bots no WhatsApp', 'Criando Voicebots']
