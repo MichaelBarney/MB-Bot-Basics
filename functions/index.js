@@ -25,7 +25,7 @@ exports.messageReceived = functions.https.onRequest(
 bot.on('pre_checkout_query', async (checkoutQuery) => {
   const { id, from } = checkoutQuery
   await bot.answerPreCheckoutQuery(id, true)
-  await bot.sendMessage(from.id, 'Aguarde só um pouquinho enquanto confirmamos o pagamento...')
+  await bot.sendMessage(from.id, '⏱ Espera só um pouquinho enquanto confirmo o pagamento... Se demorar mais do que 10 minutos, envie /suporte')
 })
 
 bot.on('callback_query', async (callbackQuery) => {
@@ -40,13 +40,13 @@ bot.on('message', async (msg) => {
   if (text === '/start') {
     processAction('launch', from)
   } else if (msg.successful_payment) {
+    await processAction('complete', from)
+
     const id = from.id.toString()
     await db
       .collection('students')
       .doc(id)
       .update({ pagamento: msg.successful_payment })
-
-    await processAction('complete', from)
   } else {
     await processMsg(text, from)
   }

@@ -44,7 +44,7 @@ const finishBlock = async ({ id, data, db }) => {
 }
 
 const createUser = async ({ id, from, db }) => {
-  await db
+  db
     .collection('students')
     .doc(id)
     .set({ name: from.first_name }, { merge: true })
