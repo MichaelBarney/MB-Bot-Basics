@@ -34,9 +34,11 @@ bot.on('callback_query', async (callbackQuery) => {
 })
 
 bot.on('message', async (msg) => {
-  const { from } = msg
+  const { from, text } = msg
 
-  if (msg.successful_payment) {
+  if (text === '/start') {
+    processAction('launch', from)
+  } else if (msg.successful_payment) {
     const id = from.id.toString()
     await db
       .collection('students')
@@ -44,12 +46,9 @@ bot.on('message', async (msg) => {
       .update({ pagamento: msg.successful_payment })
 
     await processAction('complete', from)
+  } else {
+    await processMsg(text, from)
   }
-})
-
-bot.onText(/\/start/, (msg) => {
-  const { from } = msg
-  processAction('launch', from)
 })
 
 const processAction = async (action, from) => {

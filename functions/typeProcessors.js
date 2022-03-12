@@ -1,3 +1,5 @@
+const { sendButtons } = require('./utils')
+
 const text = async ({ id, bot, from, data }) => {
   let textMessage = data.payload?.message
 
@@ -11,20 +13,13 @@ const text = async ({ id, bot, from, data }) => {
 }
 
 const choice = async ({ id, bot, data }) => {
-  const buttonData = data.payload?.buttons
+  const options = data.payload?.buttons.map(data => data.name)
 
-  const buttonHeader = buttonData.shift().name
+  const header = options.shift()
 
-  const buttons = buttonData.map((data) => {
-    return [{ text: data.name, callback_data: data.name }]
-  })
-
-  await bot.sendMessage(id, buttonHeader, {
-    reply_markup: JSON.stringify({
-      inline_keyboard: buttons
-    })
-  })
+  await sendButtons(header, options, bot, id)
 }
+
 const save = async ({ id, data, db }) => {
   const payload = JSON.parse(data.payload)
   await db.collection('students').doc(id).set(payload)
@@ -55,29 +50,25 @@ const createUser = async ({ id, from, db }) => {
     .set({ name: from.first_name }, { merge: true })
 }
 
-const blocks = ['Tecnologias', 'Conversas']
+const blocks = ['Tecnologias Importantes', 'Construindo Conversas', 'Bots no WhatsApp', 'Criando Voicebots']
 const menu = async ({ id, bot, db }) => {
   const studentData = (await db.collection('students').doc(id).get()).data()
   let finishedBlocks = 0
-  const buttons = blocks.map((blockName, index) => {
+  const options = blocks.map((blockName, index) => {
     let finished = false
 
     if (studentData.finishedBlocks?.[index + 1]) {
       finished = true
       finishedBlocks += 1
     }
-    return [{ text: blockName + (finished ? ' ✅' : ''), callback_data: blockName }]
+    return blockName + (finished ? ' ✅' : '')
   })
 
   if (finishedBlocks === blocks.length) {
-    buttons.push([{ text: '📜 Emitir Certificado 📜', callback_data: 'Emitir Certificado' }])
+    options.push('📜 Emitir Certificado 📜')
   }
 
-  await bot.sendMessage(id, 'Qual bloco você quer começar?', {
-    reply_markup: JSON.stringify({
-      inline_keyboard: buttons
-    })
-  })
+  await sendButtons('Qual bloco você quer começar?', options, bot, id)
 }
 
 const pay = async ({ bot, id, STRIPE_TEST }) => {
@@ -92,15 +83,17 @@ const pay = async ({ bot, id, STRIPE_TEST }) => {
     suggested_tip_amounts: [1000, 5000, 10000]
   })
 
-  const buttons = ['Pagar depois'].map((name) => {
-    return [{ text: name, callback_data: name }]
-  })
-
-  await bot.sendMessage(id, 'Outras opções:', {
-    reply_markup: JSON.stringify({
-      inline_keyboard: buttons
-    })
-  })
+  await sendButtons('Clique no botão acima para fazer o pagamento ⬆️', ['Pagar depois'], bot, id)
 }
 
-module.exports = { menu, createUser, saveAnswer, save, choice, text, finishBlock, pay }
+const animation = async ({ bot, id, data }) => {
+  const search = data.payload
+  await bot.sendAnimation(id, search)
+}
+
+const audio = async ({ bot, id, data }) => {
+  const audio = data.payload
+  await bot.sendAudio(id, audio)
+}
+
+module.exports = { menu, createUser, saveAnswer, save, choice, text, finishBlock, pay, animation, audio }

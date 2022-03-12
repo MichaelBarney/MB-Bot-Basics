@@ -14,7 +14,6 @@ const href = window.location.href
 const url = new URL(href)
 const id = url.searchParams.get('s')
 
-console.log("ID:", id)
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
@@ -30,7 +29,6 @@ const ul = document.getElementById('answers')
 
 if (studentSnapshot.exists()) { 
     const studentData = studentSnapshot.data();
-    console.log("Student: ", studentData)
     studentName.textContent = studentData.name;
     if (Object.keys(studentData.finishedBlocks).length == 2 && studentData.pagamento) {
         status.textContent = "OK!"
