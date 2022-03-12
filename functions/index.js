@@ -23,9 +23,9 @@ exports.messageReceived = functions.https.onRequest(
 )
 
 bot.on('pre_checkout_query', async (checkoutQuery) => {
-  const { id } = checkoutQuery
+  const { id, from } = checkoutQuery
   await bot.answerPreCheckoutQuery(id, true)
-  await bot.sendMessage(id, 'Aguarde só um pouquinho enquanto confirmamos o pagamento...')
+  await bot.sendMessage(from.id, 'Aguarde só um pouquinho enquanto confirmamos o pagamento...')
 })
 
 bot.on('callback_query', async (callbackQuery) => {
