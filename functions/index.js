@@ -40,7 +40,8 @@ bot.on('message', async (msg) => {
   const { from, text } = msg
 
   if (text === '/start') {
-    processAction('launch', from)
+    console.log('DBG: LAUNCH')
+    await processAction('launch', from)
   } else if (msg.successful_payment) {
     await processAction('complete', from)
 
