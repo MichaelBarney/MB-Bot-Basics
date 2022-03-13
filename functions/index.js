@@ -26,8 +26,8 @@ exports.messageReceived = functions.https.onRequest(async (request, response) =>
 
 bot.on('pre_checkout_query', async (checkoutQuery) => {
   const { id, from } = checkoutQuery
-  await bot.answerPreCheckoutQuery(id, true)
-  await bot.sendMessage(from.id, '⏱ Espera só um pouquinho enquanto confirmo o pagamento... Se demorar mais do que 10 minutos, envie /suporte')
+  await bot.telegram.answerPreCheckoutQuery(id, true)
+  await bot.telegram.sendMessage(from.id, '⏱ Espera só um pouquinho enquanto confirmo o pagamento... Se demorar mais do que 10 minutos, envie /suporte')
 })
 
 bot.on('callback_query', async (callbackQuery) => {

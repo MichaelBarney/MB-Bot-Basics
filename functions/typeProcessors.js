@@ -7,7 +7,7 @@ const text = async ({ id, bot, from, data }) => {
 
   if (!textMessage) return
 
-  await bot.sendMessage(id, textMessage, {
+  await bot.telegram.sendMessage(id, textMessage, {
     parse_mode: 'Markdown'
   })
 }
@@ -90,12 +90,12 @@ const pay = async ({ bot, id, STRIPE_TEST }) => {
 
 const animation = async ({ bot, id, data }) => {
   const search = data.payload
-  await bot.sendAnimation(id, search)
+  await bot.telegram.sendAnimation(id, search)
 }
 
 const audio = async ({ bot, id, data }) => {
   const audio = data.payload
-  await bot.sendAudio(id, audio)
+  await bot.telegram.sendAudio(id, audio)
 }
 
 module.exports = { menu, createUser, saveAnswer, save, choice, text, finishBlock, pay, animation, audio }

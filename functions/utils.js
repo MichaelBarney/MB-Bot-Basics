@@ -3,7 +3,7 @@ const sendButtons = async (header, options, bot, id, placeholder) => {
     return [{ text: option, callback_data: option }]
   })
 
-  await bot.sendMessage(id, header, {
+  await bot.telegram.sendMessage(id, header, {
     reply_markup: {
       keyboard: buttons,
       resize_keyboard: true,
