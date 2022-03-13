@@ -18,31 +18,21 @@ const bot = new Telegraf(TELEGRAM_TOKEN, {
 const typeProcessors = require('./typeProcessors')
 
 exports.messageReceived = functions.https.onRequest(async (request, response) => {
-  return await bot.handleUpdate(request.body, response).then((rv) => {
-    return !rv && response.sendStatus(200)
-  })
-}
-)
-
-bot.on('pre_checkout_query', async (checkoutQuery) => {
-  const { id, from } = checkoutQuery
-  await bot.telegram.answerPreCheckoutQuery(id, true)
-  await bot.telegram.sendMessage(from.id, '⏱ Espera só um pouquinho enquanto confirmo o pagamento... Se demorar mais do que 10 minutos, envie /suporte')
+  await bot.handleUpdate(request.body, response)
+  response.send()
 })
 
-bot.on('callback_query', async (callbackQuery) => {
-  const text = callbackQuery.data
-  const from = callbackQuery.from
-  await processMsg(text, from)
+bot.on('pre_checkout_query', async (ctx) => {
+  await ctx.answerPreCheckoutQuery(true)
 })
 
-bot.on('message', async (msg) => {
+bot.command('/start', async (ctx) => await processAction('launch', ctx.from))
+
+bot.on('message', async (ctx) => {
+  const msg = ctx.message
   const { from, text } = msg
 
-  if (text === '/start') {
-    console.log('DBG: LAUNCH')
-    await processAction('launch', from)
-  } else if (msg.successful_payment) {
+  if (msg.successful_payment) {
     await processAction('complete', from)
 
     const id = from.id.toString()
@@ -77,6 +67,7 @@ const processAction = async (action, from) => {
 }
 
 const processMsg = async (text, from) => {
+  console.log('DBG: SENT', text)
   const response = await axios({
     method: 'POST',
     baseURL: 'https://general-runtime.voiceflow.com',

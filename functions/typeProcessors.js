@@ -74,16 +74,21 @@ const menu = async ({ id, bot, db }) => {
 }
 
 const pay = async ({ bot, id, STRIPE_TEST }) => {
-  const payload = id + Date.now()
+  const invoice = {
+    chat_id: id, // Unique identifier of the target chat or username of the target channel
+    provider_token: STRIPE_TEST,
+    start_parameter: 'pagar', // Unique parameter for deep links. If you leave this field blank, forwarded copies of the forwarded message will have a Pay button that allows multiple users to pay directly from the forwarded message using the same account. If not empty, redirected copies of the sent message will have a URL button with a deep link to the bot (instead of a payment button) with a value used as an initial parameter.
+    title: 'Certificação', // Product name, 1-32 characters
+    description: 'Emita um certificado de conclusão ao terminar o curso', // Product description, 1-255 characters
+    currency: 'BRL', // ISO 4217 Three-Letter Currency Code
+    prices: [{
+      label: 'Certificação',
+      amount: 2000
+    }], // Price breakdown, serialized list of components in JSON format 100 kopecks * 100 = 100 rubles
+    payload: id + Date.now()
+  }
 
-  const prices = [{
-    label: 'Certificação',
-    amount: 2000
-  }]
-  bot.sendInvoice(id, 'Certificação', 'Emita um certificado de conclusão ao terminar o curso', payload, STRIPE_TEST, 'pagar', 'BRL', prices, {
-    max_tip_amount: 100000,
-    suggested_tip_amounts: [1000, 5000, 10000]
-  })
+  await bot.telegram.sendInvoice(id, invoice)
 
   await sendButtons('Clique no botão acima para fazer o pagamento ⬆️', ['Pagar depois'], bot, id)
 }
