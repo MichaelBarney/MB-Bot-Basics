@@ -1,25 +1,27 @@
 const functions = require('firebase-functions')
-const admin = require('firebase-admin')
 const axios = require('axios')
-const TelegramBot = require('node-telegram-bot-api')
 
 const TELEGRAM_TOKEN = functions.config().telegram.token
 const apiKey = functions.config().voiceflow.key
 const versionID = functions.config().voiceflow.version
 const STRIPE_TEST = functions.config().stripe.test
 
+const admin = require('firebase-admin')
 admin.initializeApp()
-
 const db = admin.firestore()
-const bot = new TelegramBot(TELEGRAM_TOKEN)
+
+const { Telegraf } = require('telegraf')
+const bot = new Telegraf(TELEGRAM_TOKEN, {
+  telegram: { webhookReply: true }
+})
 
 const typeProcessors = require('./typeProcessors')
 
-exports.messageReceived = functions.https.onRequest(
-  async (request, response) => {
-    bot.processUpdate(request.body)
-    response.sendStatus(200)
-  }
+exports.messageReceived = functions.https.onRequest(async (request, response) => {
+  return await bot.handleUpdate(request.body, response).then((rv) => {
+    return !rv && response.sendStatus(200)
+  })
+}
 )
 
 bot.on('pre_checkout_query', async (checkoutQuery) => {
