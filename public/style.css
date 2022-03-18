@@ -1,0 +1,79 @@
+body {
+  font-family: "Catamaran";
+}
+.certificate {
+  background-color: white;
+  width: 720px;
+  border: #222222 solid 8px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  padding: 12px;
+  position: absolute;
+  top: 32px;
+  right: 8px;
+  left: 8px;
+  margin: auto;
+  max-width: 90vw;
+}
+
+.certificate__content {
+  width: 100%;
+  background-color: #f2f2f2;
+  padding-bottom: 16px;
+}
+
+.certificate__header {
+  background-color: #222222;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.certificate__header img {
+  display: inline;
+  height: 24px;
+  margin-right: 8px;
+}
+
+.certificate__header__title {
+  display: inline;
+  color: #f2f2f2;
+  font-weight: 800;
+  font-size: 24px;
+  margin: 0;
+}
+
+.certificate__header_emissao {
+  display: inline;
+  float: right;
+  color: #f2f2f2;
+  font-family: "Catamaran";
+  font-size: 16px;
+  margin: 0;
+}
+
+.certificate__text {
+  text-align: center;
+  margin: 0;
+}
+
+.certificate h1 {
+  text-align: center;
+  margin-top: -8px;
+  margin-bottom: -8px;
+  padding: 0;
+}
+.certificate__signature {
+  display: flex;
+  justify-content: center;
+
+  margin-top: 40px;
+}
+.certificate__signature img {
+  width: 288px;
+}
+
+.certificate__verification {
+  text-align: center;
+  margin-top: 32px;
+  margin-bottom: 0;
+}
