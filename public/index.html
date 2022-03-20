@@ -11,25 +11,35 @@
   </head>
   <body>
     <div class="certificate">
-      <div class="certificate__content">
-        <div class="certificate__header">
-          <img src="img/chat.png" />
-          <p class="certificate__header__title">Michael Barney</p>
-          <p class="certificate__header_emissao">
-            Emitido <b>3 de Janeiro, 2022</b>
+      <div class="certificate__border">
+        <div class="certificate__content">
+          <div class="certificate__header">
+            <img src="img/chat.png" />
+            <p class="certificate__header__title">Michael Barney</p>
+            <p class="certificate__header_emissao">
+              Emitido <b id="emissionDate"></b>
+            </p>
+          </div>
+          <p class="certificate__text">Este certificado garante que</p>
+          <h1 id="studentName"></h1>
+          <p class="certificate__text">completou com sucesso o curso</p>
+          <h1>Bot Basics</h1>
+          <p class="certificate__text">
+            representando uma carga horária de aproximadamente 10 horas
+          </p>
+          <div class="certificate__signature"><img src="img/sign.png" /></div>
+          <p class="certificate__verification">
+            Verifique esta certificação em
+            <b id="certificateLink"></b>
           </p>
         </div>
-        <p class="certificate__text">Este certificado garante que</p>
-        <h1>Joãozinho da Silva</h1>
-        <p class="certificate__text">completou com sucesso o curso</p>
-        <h1>Bot Basics</h1>
-        <p class="certificate__text">
-          representando uma carga horária de aproximadamente 10 horas
+      </div>
+      <div class="results">
+        <p>
+          Como parte desta certificação, foram obtidas as seguintes taxas de
+          acertos:
         </p>
-        <div class="certificate__signature"><img src="img/sign.png" /></div>
-        <p class="certificate__verification">
-          Verifique esta certificação em <b>https://lorem.app/7685</b>
-        </p>
+        <div id="answers"></div>
       </div>
     </div>
   </body>

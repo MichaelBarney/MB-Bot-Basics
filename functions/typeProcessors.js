@@ -48,7 +48,7 @@ const createUser = async ({ id, from, db }) => {
   await db
     .collection("students")
     .doc(id)
-    .set({ name: from.first_name }, { merge: true });
+    .set({ name: from.first_name, lastName: from.last_name }, { merge: true });
   console.log("DBG: finished creating user");
 };
 
@@ -59,6 +59,7 @@ const blocks = [
   "Criando Voicebots",
   "Programando Ações",
 ];
+
 const menu = async ({ id, bot, db }) => {
   const studentData = (await db.collection("students").doc(id).get()).data();
   let finishedBlocks = 0;
@@ -74,6 +75,19 @@ const menu = async ({ id, bot, db }) => {
 
   if (finishedBlocks === blocks.length) {
     options.unshift("📜 Emitir Certificado 📜");
+    if (!studentData.certificateEmissionDate) {
+      const date = new Date();
+      const monthName = date.toLocaleDateString("pt-BR", { month: "long" });
+      await db
+        .collection("students")
+        .doc(id)
+        .set(
+          {
+            certificateEmissionDate: `${date.getDate()} de ${monthName}, ${date.getFullYear()}`,
+          },
+          { merge: true }
+        );
+    }
   }
 
   await sendButtons("Qual bloco você quer começar?", options, bot, id);
