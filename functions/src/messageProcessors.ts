@@ -65,7 +65,6 @@ const messageProcessors: { [type: string]: processorFunction } = {
   },
 
   createUser: async ({ from, payload }) => {
-    console.log("DBG: started creating user");
     await db
       .collection("students")
       .doc(String(from.id))
@@ -73,7 +72,6 @@ const messageProcessors: { [type: string]: processorFunction } = {
         { name: from.first_name, lastName: from.last_name },
         { merge: true }
       );
-    console.log("DBG: finished creating user");
   },
 
   menu: async ({ from, payload, telegramService }) => {

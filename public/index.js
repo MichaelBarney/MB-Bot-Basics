@@ -48,7 +48,6 @@ const percentageBar = (percentage) => {
 
 if (studentSnapshot.exists()) {
   const studentData = studentSnapshot.data();
-  console.log("DBG Student Data: ", studentData);
   studentName.textContent = `${studentData.name} ${studentData.lastName ?? ""}`;
   certificateLink.textContent = `https://mb-bot-basics.web.app/${id}`;
   emissionDate.textContent = studentData.certificateEmissionDate;

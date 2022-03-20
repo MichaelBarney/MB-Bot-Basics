@@ -52,9 +52,7 @@ telegramService.bot.on("successful_payment", async (ctx) => {
 
 const processResponses = async (responses: VoiceflowResponse[], from: User) => {
   for (const voiceflowResponse of responses) {
-    console.log("DBG: ", voiceflowResponse);
     const messageProcessor = messageProcessors[voiceflowResponse.type];
-    console.log("DBG: ", messageProcessor);
     if (messageProcessor) {
       await messageProcessor({
         from,
