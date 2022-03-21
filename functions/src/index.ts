@@ -19,8 +19,6 @@ export const messageReceived = functions.https.onRequest(
   }
 );
 
-// Telegram Receivers
-
 telegramService.bot.on("text", async (ctx) => {
   const { from, text } = ctx.message;
   const responses = await voiceflowService.sendText(text, from);

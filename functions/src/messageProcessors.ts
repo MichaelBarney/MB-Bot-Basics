@@ -69,7 +69,7 @@ const messageProcessors: { [type: string]: processorFunction } = {
       .collection("students")
       .doc(String(from.id))
       .set(
-        { name: from.first_name, lastName: from.last_name },
+        { name: from.first_name, lastName: from.last_name ?? "" },
         { merge: true }
       );
   },
