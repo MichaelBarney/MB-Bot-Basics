@@ -8,12 +8,3 @@ Talk to him here: https://t.me/mb_basics_bot
 
 ### Certificate Example
 https://mb-bot-basics.web.app/420728565
-
-### Important Commands:
- **Using NGROK for local testing:**
- ngrok http 5001
- **Testing Firebase Locally**
-firebase emulators:start
- **Setting Enviroment Variables**
-firebase functions:config:set stripe.test="_______"
-firebase functions:config:get > .runtimeconfig.json 
