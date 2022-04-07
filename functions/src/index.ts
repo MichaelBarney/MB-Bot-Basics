@@ -19,15 +19,15 @@ export const messageReceived = functions.https.onRequest(
   }
 );
 
-telegramService.bot.on("text", async (ctx) => {
-  const { from, text } = ctx.message;
-  const responses = await voiceflowService.sendText(text, from);
+telegramService.bot.command("start", async (ctx) => {
+  const { from } = ctx;
+  const responses = await voiceflowService.sendAction("launch", from);
   await processResponses(responses, from);
 });
 
-telegramService.bot.command("/start", async (ctx) => {
-  const { from } = ctx;
-  const responses = await voiceflowService.sendAction("launch", from);
+telegramService.bot.on("text", async (ctx) => {
+  const { from, text } = ctx.message;
+  const responses = await voiceflowService.sendText(text, from);
   await processResponses(responses, from);
 });
 

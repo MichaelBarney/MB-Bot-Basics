@@ -11,14 +11,14 @@ exports.messageReceived = functions.https.onRequest(async (request, response) =>
     await telegramService.bot.handleUpdate(request.body, response);
     response.send();
 });
+telegramService.bot.command("start", async (ctx) => {
+    const { from } = ctx;
+    const responses = await voiceflowService.sendAction("launch", from);
+    await processResponses(responses, from);
+});
 telegramService.bot.on("text", async (ctx) => {
     const { from, text } = ctx.message;
     const responses = await voiceflowService.sendText(text, from);
-    await processResponses(responses, from);
-});
-telegramService.bot.command("/start", async (ctx) => {
-    const { from } = ctx;
-    const responses = await voiceflowService.sendAction("launch", from);
     await processResponses(responses, from);
 });
 telegramService.bot.on("pre_checkout_query", async (ctx) => {
