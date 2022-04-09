@@ -1,4 +1,6 @@
 {
+  "compileOnSave": true,
+
   "compilerOptions": {
     "module": "commonjs",
     "noImplicitReturns": true,
@@ -8,8 +10,5 @@
     "strict": true,
     "target": "es2017"
   },
-  "compileOnSave": true,
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

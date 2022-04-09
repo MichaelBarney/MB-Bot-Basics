@@ -2,8 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const telegraf_1 = require("telegraf");
 const functions = require("firebase-functions");
-const TELEGRAM_TOKEN = functions.config().telegram.token;
 const STRIPE_TEST_KEY = functions.config().stripe.test;
+const isEmulated = process.env.FUNCTIONS_EMULATOR === "true";
+const TELEGRAM_TOKEN = isEmulated
+    ? functions.config().telegram.tokens.test
+    : functions.config().telegram.tokens.prod;
 class TelegramService {
     constructor() {
         this.bot = new telegraf_1.Telegraf(TELEGRAM_TOKEN, {

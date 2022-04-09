@@ -2,8 +2,12 @@ import { Telegraf } from "telegraf";
 import { User } from "telegraf/typings/core/types/typegram";
 import * as functions from "firebase-functions";
 
-const TELEGRAM_TOKEN: string = functions.config().telegram.token;
 const STRIPE_TEST_KEY: string = functions.config().stripe.test;
+
+const isEmulated = process.env.FUNCTIONS_EMULATOR === "true";
+const TELEGRAM_TOKEN: string = isEmulated
+  ? functions.config().telegram.tokens.test
+  : functions.config().telegram.tokens.prod;
 
 class TelegramService {
   bot = new Telegraf(TELEGRAM_TOKEN, {

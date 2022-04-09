@@ -1,6 +1,15 @@
+// import * as functions from "firebase-functions-test";
 import VoiceflowService from "../../src/services/VoiceflowService";
 
+// const testEnv = functions(
+//   {
+//     projectId: "mb-bot-basics",
+//   },
+//   "../../firebaseKey.json"
+// );
+
 const voiceflowService = new VoiceflowService();
+
 const telegramUser = {
   username: "tester",
   id: 123,
