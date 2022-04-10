@@ -26,6 +26,16 @@ export const messageReceived = functions.https.onRequest(
 // Message handlers
 telegramService.bot.command("start", async (ctx) => {
   const { from } = ctx;
+
+  await admin
+    .firestore()
+    .collection("students")
+    .doc(from.id.toString())
+    .set(
+      { name: from.first_name, lastName: from.last_name ?? "" },
+      { merge: true }
+    );
+
   const responses = await voiceflowService.sendAction("launch", from);
   await _processResponses(responses, from);
 });

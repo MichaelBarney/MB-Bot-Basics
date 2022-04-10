@@ -36,13 +36,6 @@ const messageProcessors: { [type: string]: processorFunction } = {
     await telegramService.sendAudio(payload, from);
   },
 
-  // Database Actions
-  createUser: async ({ from, payload, document }) => {
-    await document.set(
-      { name: from.first_name, lastName: from.last_name ?? "" },
-      { merge: true }
-    );
-  },
   save: async ({ from, payload, document }) => {
     const jsonPayload = JSON.parse(payload);
     await document.update(jsonPayload);
