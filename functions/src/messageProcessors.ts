@@ -18,10 +18,7 @@ interface processorFunction {
 const messageProcessors: { [type: string]: processorFunction } = {
   text: async ({ from, payload, telegramService }) => {
     let textMessage = payload.message;
-
-    // Apply Substitutions
     textMessage = textMessage.replace("FIRST_NAME", from.first_name);
-
     await telegramService.sendText(textMessage, from);
   },
 
@@ -30,16 +27,6 @@ const messageProcessors: { [type: string]: processorFunction } = {
     const header = options.shift();
     await telegramService.sendButtons(options, from, header);
   },
-
-  save: async ({ from, payload }) => {
-    const jsonPayload = JSON.parse(payload);
-    await admin
-      .firestore()
-      .collection("students")
-      .doc(String(from.id))
-      .set(jsonPayload);
-  },
-
   animation: async ({ from, payload, telegramService }) => {
     await telegramService.sendAnimation(payload, from);
   },
@@ -48,26 +35,7 @@ const messageProcessors: { [type: string]: processorFunction } = {
     await telegramService.sendAudio(payload, from);
   },
 
-  saveAnswer: async ({ from, payload }) => {
-    const { question, correct } = JSON.parse(payload);
-    const key = `answers.${question}`;
-    await admin
-      .firestore()
-      .collection("students")
-      .doc(String(from.id))
-      .update({ [key]: correct });
-  },
-
-  finishBlock: async ({ from, payload }) => {
-    const block = parseInt(payload);
-    const key = `finishedBlocks.${block}`;
-    await admin
-      .firestore()
-      .collection("students")
-      .doc(String(from.id))
-      .update({ [key]: true });
-  },
-
+  // Database Actions
   createUser: async ({ from, payload }) => {
     await admin
       .firestore()
@@ -78,7 +46,34 @@ const messageProcessors: { [type: string]: processorFunction } = {
         { merge: true }
       );
   },
+  save: async ({ from, payload }) => {
+    const jsonPayload = JSON.parse(payload);
+    await admin
+      .firestore()
+      .collection("students")
+      .doc(String(from.id))
+      .set(jsonPayload);
+  },
+  saveAnswer: async ({ from, payload }) => {
+    const { question, correct } = JSON.parse(payload);
+    const key = `answers.${question}`;
+    await admin
+      .firestore()
+      .collection("students")
+      .doc(String(from.id))
+      .update({ [key]: correct });
+  },
+  finishBlock: async ({ from, payload }) => {
+    const block = parseInt(payload);
+    const key = `finishedBlocks.${block}`;
+    await admin
+      .firestore()
+      .collection("students")
+      .doc(String(from.id))
+      .update({ [key]: true });
+  },
 
+  // Main Menu
   menu: async ({ from, telegramService }, mocks) => {
     const studentData =
       mocks.studentData ||
@@ -103,40 +98,64 @@ const messageProcessors: { [type: string]: processorFunction } = {
       }
     );
 
+    // Check if certificate can be emitted
     if (finishedBlocks === BLOCKS.pt.length) {
-      options.unshift("📜 Emitir Certificado 📜");
+      options.unshift(
+        _localizedString(
+          from,
+          "📜 Emit Certificate 📜",
+          "📜 Emitir Certificado 📜"
+        )
+      );
 
       //Set emission date
       if (!studentData?.certificateEmissionDate) {
         const date = new Date();
-        const monthName = date.toLocaleDateString("pt-BR", { month: "long" });
+        const monthName = date.toLocaleDateString(
+          _localizedString(from, "en", "pt-BR"),
+          { month: "long" }
+        );
         await admin
           .firestore()
           .collection("students")
           .doc(String(from.id))
           .set(
             {
-              certificateEmissionDate: `${date.getDate()} de ${monthName}, ${date.getFullYear()}`,
+              certificateEmissionDate: _localizedString(
+                from,
+                `${monthName} ${date.getDate()}, ${date.getFullYear()}`,
+                `${date.getDate()} de ${monthName}, ${date.getFullYear()}`
+              ),
             },
             { merge: true }
           );
       }
     }
-
     await telegramService.sendButtons(
       options,
       from,
-      "Qual bloco você quer começar?"
+      _localizedString(
+        from,
+        "Which block do you want to start?",
+        "Qual bloco você quer começar?"
+      )
     );
   },
+
+  // Payments
   pay: async ({ from, telegramService }) => {
     await telegramService.sendInvoice(from);
     await telegramService.sendButtons(
       ["Pagar depois"],
       from,
-      "Clique no botão acima para fazer o pagamento ⬆️"
+      _localizedString(
+        from,
+        "Click the button above to make the payment ⬆️",
+        "Clique no botão acima para fazer o pagamento ⬆️"
+      )
     );
   },
+
   paymentComplete: async ({ from, payload }) => {
     await admin
       .firestore()
@@ -144,6 +163,11 @@ const messageProcessors: { [type: string]: processorFunction } = {
       .doc(String(from.id))
       .update({ pagamento: payload });
   },
+};
+
+const _localizedString = (from: User, en: string, pt: string) => {
+  if (from.language_code === "en") return en;
+  else return pt;
 };
 
 export default messageProcessors;
