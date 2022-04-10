@@ -117,9 +117,18 @@ const messageProcessors: { [type: string]: processorFunction } = {
 
   // Payments
   pay: async ({ from, telegramService }) => {
-    await telegramService.sendInvoice(from);
+    await telegramService.sendInvoice(
+      from,
+      _localizedString(from, "Certification", "Certificação"),
+      _localizedString(
+        from,
+        "Emit a certificate of conclusion when you finish the course",
+        "Emita um certificado de conclusão ao terminar o curso"
+      ),
+      20
+    );
     await telegramService.sendButtons(
-      ["Pagar depois"],
+      [_localizedString(from, "Pay later", "Pagar depois")],
       from,
       _localizedString(
         from,

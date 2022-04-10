@@ -38,13 +38,19 @@ it("Can send button messages", async () => {
 });
 
 it("Can send invoices", async () => {
-  await telegramService.sendInvoice(telegramUser, {
-    telegram: {
-      sendInvoice: async (id, invoice) => {
-        expect(invoice.title).toBe("Certificação");
-        expect(invoice.prices[0].amount).toBe(2000);
+  await telegramService.sendInvoice(
+    telegramUser,
+    "Product Name",
+    "Description",
+    20,
+    {
+      telegram: {
+        sendInvoice: async (id, invoice) => {
+          expect(invoice.title).toBe("Product Name");
+          expect(invoice.prices[0].amount).toBe(2000);
+        },
+        sendMessage: async (id, invoice) => {},
       },
-      sendMessage: async (id, invoice) => {},
-    },
-  });
+    }
+  );
 });
