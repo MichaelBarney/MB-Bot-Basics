@@ -4,4 +4,4 @@ node_modules/
 
 lib/
 
-firebaseKey.json
+service-account.json

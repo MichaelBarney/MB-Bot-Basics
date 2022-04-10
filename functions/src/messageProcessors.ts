@@ -5,8 +5,6 @@ import * as admin from "firebase-admin";
 
 admin.initializeApp();
 
-const db = admin.firestore();
-
 interface processorDTO {
   from: User;
   payload: any;
@@ -14,7 +12,7 @@ interface processorDTO {
 }
 
 interface processorFunction {
-  (dto: processorDTO): Promise<void>;
+  (dto: processorDTO, mocks?: any): Promise<void>;
 }
 
 const messageProcessors: { [type: string]: processorFunction } = {
@@ -35,7 +33,11 @@ const messageProcessors: { [type: string]: processorFunction } = {
 
   save: async ({ from, payload }) => {
     const jsonPayload = JSON.parse(payload);
-    await db.collection("students").doc(String(from.id)).set(jsonPayload);
+    await admin
+      .firestore()
+      .collection("students")
+      .doc(String(from.id))
+      .set(jsonPayload);
   },
 
   animation: async ({ from, payload, telegramService }) => {
@@ -49,7 +51,8 @@ const messageProcessors: { [type: string]: processorFunction } = {
   saveAnswer: async ({ from, payload }) => {
     const { question, correct } = JSON.parse(payload);
     const key = `answers.${question}`;
-    await db
+    await admin
+      .firestore()
       .collection("students")
       .doc(String(from.id))
       .update({ [key]: correct });
@@ -58,14 +61,16 @@ const messageProcessors: { [type: string]: processorFunction } = {
   finishBlock: async ({ from, payload }) => {
     const block = parseInt(payload);
     const key = `finishedBlocks.${block}`;
-    await db
+    await admin
+      .firestore()
       .collection("students")
       .doc(String(from.id))
       .update({ [key]: true });
   },
 
   createUser: async ({ from, payload }) => {
-    await db
+    await admin
+      .firestore()
       .collection("students")
       .doc(String(from.id))
       .set(
@@ -74,10 +79,17 @@ const messageProcessors: { [type: string]: processorFunction } = {
       );
   },
 
-  menu: async ({ from, payload, telegramService }) => {
-    const studentData = (
-      await db.collection("students").doc(String(from.id)).get()
-    ).data();
+  menu: async ({ from, telegramService }, mocks) => {
+    const studentData =
+      mocks.studentData ||
+      (
+        await admin
+          .firestore()
+          .collection("students")
+          .doc(String(from.id))
+          .get()
+      ).data();
+
     let finishedBlocks = 0;
     const options = BLOCKS.map((blockName, index) => {
       let finished = false;
@@ -91,10 +103,13 @@ const messageProcessors: { [type: string]: processorFunction } = {
 
     if (finishedBlocks === BLOCKS.length) {
       options.unshift("📜 Emitir Certificado 📜");
+
+      //Set emission date
       if (!studentData?.certificateEmissionDate) {
         const date = new Date();
         const monthName = date.toLocaleDateString("pt-BR", { month: "long" });
-        await db
+        await admin
+          .firestore()
           .collection("students")
           .doc(String(from.id))
           .set(
@@ -121,7 +136,8 @@ const messageProcessors: { [type: string]: processorFunction } = {
     );
   },
   paymentComplete: async ({ from, payload }) => {
-    await db
+    await admin
+      .firestore()
       .collection("students")
       .doc(String(from.id))
       .update({ pagamento: payload });

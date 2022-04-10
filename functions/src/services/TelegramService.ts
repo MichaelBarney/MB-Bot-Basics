@@ -9,16 +9,32 @@ const TELEGRAM_TOKEN: string = isEmulated
   ? functions.config().telegram.tokens.test
   : functions.config().telegram.tokens.prod;
 
+interface BotMock {
+  telegram: {
+    sendMessage(id: number, text: string, extra: any): Promise<void>;
+    sendInvoice(id: number, invoice: any): Promise<void>;
+  };
+}
+
 class TelegramService {
   bot = new Telegraf(TELEGRAM_TOKEN, {
     telegram: { webhookReply: true },
   });
 
+  async sendText(text: string, to: User, botMock?: BotMock) {
+    const id = to.id;
+    const usableBot = botMock || this.bot;
+    await usableBot.telegram.sendMessage(id, text, {
+      parse_mode: "Markdown",
+    });
+  }
+
   async sendButtons(
     options: string[],
     to: User,
     header?: string,
-    placeholder?: string
+    placeholder?: string,
+    botMock?: BotMock
   ) {
     const id = to.id;
 
@@ -26,20 +42,15 @@ class TelegramService {
       return [{ text: option, callback_data: option }];
     });
 
-    await this.bot.telegram.sendMessage(id, header ?? "Escolha uma opção:", {
+    const usableBot = botMock || this.bot;
+
+    await usableBot.telegram.sendMessage(id, header ?? "Escolha uma opção:", {
       reply_markup: {
         keyboard: buttons,
         resize_keyboard: true,
         one_time_keyboard: true,
         input_field_placeholder: placeholder ?? options[0],
       },
-    });
-  }
-
-  async sendText(text: string, to: User) {
-    const id = to.id;
-    await this.bot.telegram.sendMessage(id, text, {
-      parse_mode: "Markdown",
     });
   }
 
@@ -51,7 +62,7 @@ class TelegramService {
     await this.bot.telegram.sendAudio(to.id, url);
   }
 
-  async sendInvoice(to: User) {
+  async sendInvoice(to: User, botMock?: BotMock) {
     const invoice = {
       chat_id: to.id, // Unique identifier of the target chat or username of the target channel
       provider_token: STRIPE_TEST_KEY,
@@ -68,7 +79,8 @@ class TelegramService {
       payload: String(to.id + Date.now()),
     };
 
-    await this.bot.telegram.sendInvoice(to.id, invoice);
+    const usableBot = botMock || this.bot;
+    await usableBot.telegram.sendInvoice(to.id, invoice);
   }
 }
 

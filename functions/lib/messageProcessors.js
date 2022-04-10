@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const consts_1 = require("./consts");
 const admin = require("firebase-admin");
 admin.initializeApp();
-const db = admin.firestore();
 const messageProcessors = {
     text: async ({ from, payload, telegramService }) => {
         let textMessage = payload.message;
@@ -18,7 +17,11 @@ const messageProcessors = {
     },
     save: async ({ from, payload }) => {
         const jsonPayload = JSON.parse(payload);
-        await db.collection("students").doc(String(from.id)).set(jsonPayload);
+        await admin
+            .firestore()
+            .collection("students")
+            .doc(String(from.id))
+            .set(jsonPayload);
     },
     animation: async ({ from, payload, telegramService }) => {
         await telegramService.sendAnimation(payload, from);
@@ -29,7 +32,8 @@ const messageProcessors = {
     saveAnswer: async ({ from, payload }) => {
         const { question, correct } = JSON.parse(payload);
         const key = `answers.${question}`;
-        await db
+        await admin
+            .firestore()
             .collection("students")
             .doc(String(from.id))
             .update({ [key]: correct });
@@ -37,20 +41,27 @@ const messageProcessors = {
     finishBlock: async ({ from, payload }) => {
         const block = parseInt(payload);
         const key = `finishedBlocks.${block}`;
-        await db
+        await admin
+            .firestore()
             .collection("students")
             .doc(String(from.id))
             .update({ [key]: true });
     },
     createUser: async ({ from, payload }) => {
         var _a;
-        await db
+        await admin
+            .firestore()
             .collection("students")
             .doc(String(from.id))
             .set({ name: from.first_name, lastName: (_a = from.last_name) !== null && _a !== void 0 ? _a : "" }, { merge: true });
     },
-    menu: async ({ from, payload, telegramService }) => {
-        const studentData = (await db.collection("students").doc(String(from.id)).get()).data();
+    menu: async ({ from, telegramService }, mocks) => {
+        const studentData = mocks.studentData ||
+            (await admin
+                .firestore()
+                .collection("students")
+                .doc(String(from.id))
+                .get()).data();
         let finishedBlocks = 0;
         const options = consts_1.BLOCKS.map((blockName, index) => {
             var _a;
@@ -63,10 +74,12 @@ const messageProcessors = {
         });
         if (finishedBlocks === consts_1.BLOCKS.length) {
             options.unshift("📜 Emitir Certificado 📜");
+            //Set emission date
             if (!(studentData === null || studentData === void 0 ? void 0 : studentData.certificateEmissionDate)) {
                 const date = new Date();
                 const monthName = date.toLocaleDateString("pt-BR", { month: "long" });
-                await db
+                await admin
+                    .firestore()
                     .collection("students")
                     .doc(String(from.id))
                     .set({
@@ -81,7 +94,8 @@ const messageProcessors = {
         await telegramService.sendButtons(["Pagar depois"], from, "Clique no botão acima para fazer o pagamento ⬆️");
     },
     paymentComplete: async ({ from, payload }) => {
-        await db
+        await admin
+            .firestore()
             .collection("students")
             .doc(String(from.id))
             .update({ pagamento: payload });
