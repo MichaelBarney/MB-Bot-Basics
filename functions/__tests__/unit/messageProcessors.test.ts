@@ -30,6 +30,23 @@ describe("messageProcessors", () => {
     });
   });
 
+  it("Can substitute the user's name", async () => {
+    const textMessage = "Hi FIRST_NAME!";
+    await messageProcessors.text({
+      from: telegramUser,
+      payload: {
+        message: textMessage,
+      },
+      telegramService: {
+        sendText: async (processedMessage, from) => {
+          expect(processedMessage).toBe(
+            textMessage.replace("FIRST_NAME", from.first_name)
+          );
+        },
+      } as TelegramService,
+    });
+  });
+
   it("Can process button messages", async () => {
     await messageProcessors.choice({
       from: telegramUser,
