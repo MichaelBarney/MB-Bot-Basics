@@ -23,28 +23,6 @@ const writeResultMock = {
   },
 } as FirebaseFirestore.WriteResult;
 
-// import * as functions from "firebase-functions-test";
-
-// const document = admin
-//   .firestore()
-//   .collection("students")
-//   .doc(telegramUser.id.toString());
-
-// const test = functions(
-//   {
-//     databaseURL: "https://mb-bot-basics.firebaseio.com",
-//     projectId: "mb-bot-basicst",
-//   },
-//   "service-account.json"
-// );
-//
-// const document = test.firestore.makeDocumentSnapshot(
-//   {},
-//   `students/${telegramUser.id.toString()}`
-// );
-//
-// jest.setTimeout(50000);
-
 describe("messageProcessors", () => {
   it("Can process text messages", async () => {
     const textMessage = "Hello!";
@@ -113,7 +91,7 @@ describe("messageProcessors", () => {
       payload: '{"result":true}',
       telegramService: {} as TelegramService,
       document: {
-        set: async (data, options) => {
+        update: async (data: FirebaseFirestore.UpdateData) => {
           expect(data.result).toBe(true);
           return writeResultMock;
         },

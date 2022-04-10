@@ -14,6 +14,7 @@ export interface State {
   storage: any[];
   variables: any[];
 }
+
 class VoiceflowService {
   db: FirebaseFirestore.Firestore;
 
@@ -70,7 +71,7 @@ class VoiceflowService {
   }
 
   async setState(of: User, state: State) {
-    await this.db.collection("students").doc(String(of.id)).set({
+    await this.db.collection("students").doc(String(of.id)).update({
       state,
     });
   }

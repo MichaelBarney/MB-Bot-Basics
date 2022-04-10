@@ -45,7 +45,7 @@ const messageProcessors: { [type: string]: processorFunction } = {
   },
   save: async ({ from, payload, document }) => {
     const jsonPayload = JSON.parse(payload);
-    await document.set(jsonPayload);
+    await document.update(jsonPayload);
   },
   saveAnswer: async ({ from, payload, document }) => {
     const { question, correct } = JSON.parse(payload);
