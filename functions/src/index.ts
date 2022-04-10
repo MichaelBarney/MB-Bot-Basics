@@ -4,10 +4,13 @@ import * as functions from "firebase-functions";
 
 import messageProcessors from "./messageProcessors";
 
+import * as admin from "firebase-admin";
+admin.initializeApp();
+
 import VoiceflowService, {
   VoiceflowResponse,
 } from "./services/VoiceflowService";
-const voiceflowService = new VoiceflowService();
+const voiceflowService = new VoiceflowService(admin.firestore());
 
 import TelegramService from "./services/TelegramService";
 const telegramService = new TelegramService();
@@ -47,6 +50,7 @@ telegramService.bot.on("successful_payment", async (ctx) => {
     from,
     payload: successful_payment,
     telegramService,
+    document: admin.firestore().collection("students").doc(from.id.toString()),
   });
 });
 
@@ -62,6 +66,10 @@ const _processResponses = async (
         from,
         payload: voiceflowResponse.payload,
         telegramService,
+        document: admin
+          .firestore()
+          .collection("students")
+          .doc(from.id.toString()),
       });
     }
   }

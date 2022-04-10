@@ -1,9 +1,12 @@
+import { FirebaseDocument } from "./../../src/messageProcessors";
 process.env.GOOGLE_APPLICATION_CREDENTIALS = "service-account.json";
 
 import messageProcessors from "../../src/messageProcessors";
 import TelegramService from "../../src/services/TelegramService";
 
 import * as admin from "firebase-admin";
+import { firestore } from "firebase-admin";
+admin.initializeApp();
 
 const telegramUser = {
   username: "tester",
@@ -11,6 +14,11 @@ const telegramUser = {
   is_bot: false,
   first_name: "Test",
 };
+
+const document = admin
+  .firestore()
+  .collection("students")
+  .doc(telegramUser.id.toString());
 
 jest.setTimeout(50000);
 
@@ -27,6 +35,7 @@ describe("messageProcessors", () => {
           expect(processedMessage).toBe(textMessage);
         },
       } as TelegramService,
+      document,
     });
   });
 
@@ -44,6 +53,7 @@ describe("messageProcessors", () => {
           );
         },
       } as TelegramService,
+      document,
     });
   });
 
@@ -70,6 +80,7 @@ describe("messageProcessors", () => {
           expect(header).toBe("Title");
         },
       } as TelegramService,
+      document,
     });
   });
 
@@ -78,6 +89,7 @@ describe("messageProcessors", () => {
       from: telegramUser,
       payload: '{"result":true}',
       telegramService: {} as TelegramService,
+      document,
     });
 
     const userDataAfter = await admin
@@ -96,6 +108,7 @@ describe("messageProcessors", () => {
       from: telegramUser,
       payload: '{"question":"B1Q2", "correct":true}',
       telegramService: {} as TelegramService,
+      document,
     });
 
     const userDataAfter = await admin
@@ -113,6 +126,7 @@ describe("messageProcessors", () => {
       from: telegramUser,
       payload: "1",
       telegramService: {} as TelegramService,
+      document,
     });
 
     const userDataAfter = await admin
@@ -132,22 +146,26 @@ describe("messageProcessors", () => {
       },
     };
 
-    await messageProcessors.menu(
-      {
-        from: telegramUser,
-        payload: "",
-        telegramService: {
-          sendButtons: async (options, from, header) => {
-            expect(options[0].includes("✅")).toBe(true);
-            expect(options[1].includes("✅")).toBe(false);
-            expect(options.length).toBe(5);
-          },
-        } as TelegramService,
-      },
-      {
-        studentData,
-      }
-    );
+    await messageProcessors.menu({
+      from: telegramUser,
+      payload: "",
+      telegramService: {
+        sendButtons: async (options, from, header) => {
+          expect(options[0]).toContain("✅");
+          expect(options[1]).not.toContain("✅");
+          expect(options.length).toBe(5);
+        },
+      } as TelegramService,
+      document: {
+        get: async () => {
+          return {
+            data: () => {
+              return studentData as FirebaseFirestore.DocumentData;
+            },
+          };
+        },
+      } as FirebaseDocument,
+    });
   });
   it("Can add certificate generation to the menu", async () => {
     const studentData = {
@@ -160,20 +178,36 @@ describe("messageProcessors", () => {
       },
     };
 
-    await messageProcessors.menu(
-      {
-        from: telegramUser,
-        payload: "",
-        telegramService: {
-          sendButtons: async (options, from, header) => {
-            expect(options[0]).toBe("📜 Emitir Certificado 📜");
-          },
-        } as TelegramService,
-      },
-      {
-        studentData,
-      }
-    );
+    await messageProcessors.menu({
+      from: telegramUser,
+      payload: "",
+      telegramService: {
+        sendButtons: async (options, from, header) => {
+          expect(options[0]).toBe("📜 Emitir Certificado 📜");
+        },
+      } as TelegramService,
+      document: {
+        get: async () => {
+          return {
+            data: () => {
+              return studentData as FirebaseFirestore.DocumentData;
+            },
+          };
+        },
+        set: async (data, options) => {
+          expect(data.certificateEmissionDate).toContain(
+            new Date().getDate().toString()
+          );
+          return {
+            updateTime: new firestore.Timestamp(0, 0),
+            writeTime: new firestore.Timestamp(0, 0),
+            isEqual: (other) => {
+              return true;
+            },
+          } as FirebaseFirestore.WriteResult;
+        },
+      } as FirebaseDocument,
+    });
   });
 
   it("Can finish payments", async () => {
@@ -181,6 +215,7 @@ describe("messageProcessors", () => {
       from: telegramUser,
       payload: "successful_payment",
       telegramService: {} as TelegramService,
+      document,
     });
 
     const userDataAfter = await admin

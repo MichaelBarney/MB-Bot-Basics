@@ -1,18 +1,19 @@
 import { BLOCKS } from "./consts";
 import { User } from "telegraf/typings/core/types/typegram";
 import TelegramService from "./services/TelegramService";
-import * as admin from "firebase-admin";
 
-admin.initializeApp();
+export type FirebaseDocument =
+  FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData>;
 
 interface processorDTO {
   from: User;
   payload: any;
   telegramService: TelegramService;
+  document: FirebaseDocument;
 }
 
 interface processorFunction {
-  (dto: processorDTO, mocks?: any): Promise<void>;
+  (dto: processorDTO): Promise<void>;
 }
 
 const messageProcessors: { [type: string]: processorFunction } = {
@@ -36,54 +37,30 @@ const messageProcessors: { [type: string]: processorFunction } = {
   },
 
   // Database Actions
-  createUser: async ({ from, payload }) => {
-    await admin
-      .firestore()
-      .collection("students")
-      .doc(String(from.id))
-      .set(
-        { name: from.first_name, lastName: from.last_name ?? "" },
-        { merge: true }
-      );
+  createUser: async ({ from, payload, document }) => {
+    await document.set(
+      { name: from.first_name, lastName: from.last_name ?? "" },
+      { merge: true }
+    );
   },
-  save: async ({ from, payload }) => {
+  save: async ({ from, payload, document }) => {
     const jsonPayload = JSON.parse(payload);
-    await admin
-      .firestore()
-      .collection("students")
-      .doc(String(from.id))
-      .set(jsonPayload);
+    await document.set(jsonPayload);
   },
-  saveAnswer: async ({ from, payload }) => {
+  saveAnswer: async ({ from, payload, document }) => {
     const { question, correct } = JSON.parse(payload);
     const key = `answers.${question}`;
-    await admin
-      .firestore()
-      .collection("students")
-      .doc(String(from.id))
-      .update({ [key]: correct });
+    await document.update({ [key]: correct });
   },
-  finishBlock: async ({ from, payload }) => {
+  finishBlock: async ({ from, payload, document }) => {
     const block = parseInt(payload);
     const key = `finishedBlocks.${block}`;
-    await admin
-      .firestore()
-      .collection("students")
-      .doc(String(from.id))
-      .update({ [key]: true });
+    await document.update({ [key]: true });
   },
 
   // Main Menu
-  menu: async ({ from, telegramService }, mocks) => {
-    const studentData =
-      mocks.studentData ||
-      (
-        await admin
-          .firestore()
-          .collection("students")
-          .doc(String(from.id))
-          .get()
-      ).data();
+  menu: async ({ from, telegramService, document }) => {
+    const studentData = (await document.get()).data();
 
     let finishedBlocks = 0;
     const options = BLOCKS[from.language_code === "en" ? "en" : "pt"].map(
@@ -115,20 +92,16 @@ const messageProcessors: { [type: string]: processorFunction } = {
           _localizedString(from, "en", "pt-BR"),
           { month: "long" }
         );
-        await admin
-          .firestore()
-          .collection("students")
-          .doc(String(from.id))
-          .set(
-            {
-              certificateEmissionDate: _localizedString(
-                from,
-                `${monthName} ${date.getDate()}, ${date.getFullYear()}`,
-                `${date.getDate()} de ${monthName}, ${date.getFullYear()}`
-              ),
-            },
-            { merge: true }
-          );
+        await document.set(
+          {
+            certificateEmissionDate: _localizedString(
+              from,
+              `${monthName} ${date.getDate()}, ${date.getFullYear()}`,
+              `${date.getDate()} de ${monthName}, ${date.getFullYear()}`
+            ),
+          },
+          { merge: true }
+        );
       }
     }
     await telegramService.sendButtons(
@@ -156,12 +129,8 @@ const messageProcessors: { [type: string]: processorFunction } = {
     );
   },
 
-  paymentComplete: async ({ from, payload }) => {
-    await admin
-      .firestore()
-      .collection("students")
-      .doc(String(from.id))
-      .update({ pagamento: payload });
+  paymentComplete: async ({ from, payload, document }) => {
+    await document.update({ pagamento: payload });
   },
 };
 

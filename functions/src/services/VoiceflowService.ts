@@ -9,13 +9,25 @@ export interface VoiceflowResponse {
   type: string;
 }
 
+export interface State {
+  stack: any[];
+  storage: any[];
+  variables: any[];
+}
 class VoiceflowService {
-  async sendAction(action: string, from: User): Promise<VoiceflowResponse[]> {
-    const languageCode = from.language_code == "en" ? from.language_code : "pt";
+  db: FirebaseFirestore.Firestore;
+
+  constructor(db: FirebaseFirestore.Firestore) {
+    this.db = db;
+  }
+
+  async sendAction(action: string, user: User): Promise<VoiceflowResponse[]> {
+    const languageCode = user.language_code == "en" ? user.language_code : "pt";
+    const state = await this.getState(user);
     const response = await axios({
       method: "POST",
       baseURL: "https://general-runtime.voiceflow.com",
-      url: `/state/user/${from.username}/interact`,
+      url: `/interact`,
       headers: {
         Authorization: VOICEFLOW_KEYS[languageCode],
       },
@@ -23,19 +35,24 @@ class VoiceflowService {
         action: {
           type: action,
         },
+        state,
       },
     });
-    return response.data;
+    await this.setState(user, response.data.state);
+    return response.data.trace;
   }
 
-  async sendText(text: string, from: User): Promise<VoiceflowResponse[]> {
+  async sendText(text: string, user: User): Promise<VoiceflowResponse[]> {
     const languageCode =
-      from.language_code === "en" ? from.language_code : "pt";
+      user.language_code === "en" ? user.language_code : "pt";
+
+    const state = await this.getState(user);
+    console.log("DBG State: ", state);
 
     const response = await axios({
       method: "POST",
       baseURL: "https://general-runtime.voiceflow.com",
-      url: `/state/user/${from.username}/interact`,
+      url: `/interact`,
       headers: {
         Authorization: VOICEFLOW_KEYS[languageCode],
       },
@@ -47,10 +64,24 @@ class VoiceflowService {
         config: {
           stopTypes: ["pay"],
         },
+        state,
       },
     });
+    await this.setState(user, response.data.state);
+    return response.data.trace;
+  }
 
-    return response.data;
+  async setState(of: User, state: State) {
+    await this.db.collection("students").doc(String(of.id)).set({
+      state,
+    });
+  }
+
+  async getState(of: User): Promise<State> {
+    const userData = (
+      await this.db.collection("students").doc(String(of.id)).get()
+    ).data();
+    return userData?.state;
   }
 }
 

@@ -1,6 +1,8 @@
 // import * as functions from "firebase-functions-test";
 import VoiceflowService from "../../src/services/VoiceflowService";
-const voiceflowService = new VoiceflowService();
+import * as admin from "firebase-admin";
+admin.initializeApp();
+const voiceflowService = new VoiceflowService(admin.firestore());
 
 const telegramUser = {
   username: "tester",
