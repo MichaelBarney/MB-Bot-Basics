@@ -1,6 +1,8 @@
-// import * as functions from "firebase-functions-test";
+process.env.GOOGLE_APPLICATION_CREDENTIALS = "service-account.json";
+
 import VoiceflowService from "../../src/services/VoiceflowService";
 import * as admin from "firebase-admin";
+
 admin.initializeApp();
 const voiceflowService = new VoiceflowService(admin.firestore());
 

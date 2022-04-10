@@ -35,7 +35,7 @@ class VoiceflowService {
         action: {
           type: action,
         },
-        state,
+        state: state || {},
       },
     });
     await this.setState(user, response.data.state);
@@ -47,8 +47,6 @@ class VoiceflowService {
       user.language_code === "en" ? user.language_code : "pt";
 
     const state = await this.getState(user);
-    console.log("DBG State: ", state);
-
     const response = await axios({
       method: "POST",
       baseURL: "https://general-runtime.voiceflow.com",
@@ -64,7 +62,7 @@ class VoiceflowService {
         config: {
           stopTypes: ["pay"],
         },
-        state,
+        state: state || {},
       },
     });
     await this.setState(user, response.data.state);

@@ -15,12 +15,35 @@ const telegramUser = {
   first_name: "Test",
 };
 
-const document = admin
-  .firestore()
-  .collection("students")
-  .doc(telegramUser.id.toString());
+const writeResultMock = {
+  updateTime: new firestore.Timestamp(0, 0),
+  writeTime: new firestore.Timestamp(0, 0),
+  isEqual: (other) => {
+    return true;
+  },
+} as FirebaseFirestore.WriteResult;
 
-jest.setTimeout(50000);
+// import * as functions from "firebase-functions-test";
+
+// const document = admin
+//   .firestore()
+//   .collection("students")
+//   .doc(telegramUser.id.toString());
+
+// const test = functions(
+//   {
+//     databaseURL: "https://mb-bot-basics.firebaseio.com",
+//     projectId: "mb-bot-basicst",
+//   },
+//   "service-account.json"
+// );
+//
+// const document = test.firestore.makeDocumentSnapshot(
+//   {},
+//   `students/${telegramUser.id.toString()}`
+// );
+//
+// jest.setTimeout(50000);
 
 describe("messageProcessors", () => {
   it("Can process text messages", async () => {
@@ -35,7 +58,7 @@ describe("messageProcessors", () => {
           expect(processedMessage).toBe(textMessage);
         },
       } as TelegramService,
-      document,
+      document: {} as FirebaseDocument,
     });
   });
 
@@ -53,7 +76,7 @@ describe("messageProcessors", () => {
           );
         },
       } as TelegramService,
-      document,
+      document: {} as FirebaseDocument,
     });
   });
 
@@ -80,7 +103,7 @@ describe("messageProcessors", () => {
           expect(header).toBe("Title");
         },
       } as TelegramService,
-      document,
+      document: {} as FirebaseDocument,
     });
   });
 
@@ -89,18 +112,13 @@ describe("messageProcessors", () => {
       from: telegramUser,
       payload: '{"result":true}',
       telegramService: {} as TelegramService,
-      document,
+      document: {
+        set: async (data, options) => {
+          expect(data.result).toBe(true);
+          return writeResultMock;
+        },
+      } as FirebaseDocument,
     });
-
-    const userDataAfter = await admin
-      .firestore()
-      .collection("students")
-      .doc(telegramUser.id.toString())
-      .get();
-
-    const result = userDataAfter.data()?.result;
-
-    expect(result).toBe(true);
   });
 
   it("Can save a user's quiz answer", async () => {
@@ -108,17 +126,13 @@ describe("messageProcessors", () => {
       from: telegramUser,
       payload: '{"question":"B1Q2", "correct":true}',
       telegramService: {} as TelegramService,
-      document,
+      document: {
+        update: async (data: FirebaseFirestore.UpdateData) => {
+          expect(data["answers.B1Q2"]).toBe(true);
+          return writeResultMock;
+        },
+      } as FirebaseDocument,
     });
-
-    const userDataAfter = await admin
-      .firestore()
-      .collection("students")
-      .doc(telegramUser.id.toString())
-      .get();
-
-    const answer = userDataAfter.data()?.answers.B1Q2;
-    expect(answer).toBe(true);
   });
 
   it("Can finish a user's block", async () => {
@@ -126,17 +140,13 @@ describe("messageProcessors", () => {
       from: telegramUser,
       payload: "1",
       telegramService: {} as TelegramService,
-      document,
+      document: {
+        update: async (data: FirebaseFirestore.UpdateData) => {
+          expect(data["finishedBlocks.1"]).toBe(true);
+          return writeResultMock;
+        },
+      } as FirebaseDocument,
     });
-
-    const userDataAfter = await admin
-      .firestore()
-      .collection("students")
-      .doc(telegramUser.id.toString())
-      .get();
-
-    const finishedBlock = userDataAfter.data()?.finishedBlocks["1"];
-    expect(finishedBlock).toBe(true);
   });
 
   it("Can generate the user's menu", async () => {
@@ -215,17 +225,12 @@ describe("messageProcessors", () => {
       from: telegramUser,
       payload: "successful_payment",
       telegramService: {} as TelegramService,
-      document,
+      document: {
+        update: async (data: FirebaseFirestore.UpdateData) => {
+          expect(data.pagamento).toBe("successful_payment");
+          return writeResultMock;
+        },
+      } as FirebaseDocument,
     });
-
-    const userDataAfter = await admin
-      .firestore()
-      .collection("students")
-      .doc(telegramUser.id.toString())
-      .get();
-
-    const payment = userDataAfter.data()?.pagamento;
-
-    expect(payment).toBe("successful_payment");
   });
 });
