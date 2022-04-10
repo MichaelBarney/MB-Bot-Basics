@@ -91,17 +91,19 @@ const messageProcessors: { [type: string]: processorFunction } = {
       ).data();
 
     let finishedBlocks = 0;
-    const options = BLOCKS.map((blockName, index) => {
-      let finished = false;
+    const options = BLOCKS[from.language_code === "en" ? "en" : "pt"].map(
+      (blockName, index) => {
+        let finished = false;
 
-      if (studentData?.finishedBlocks?.[index + 1]) {
-        finished = true;
-        finishedBlocks += 1;
+        if (studentData?.finishedBlocks?.[index + 1]) {
+          finished = true;
+          finishedBlocks += 1;
+        }
+        return blockName + (finished ? " ✅" : "");
       }
-      return blockName + (finished ? " ✅" : "");
-    });
+    );
 
-    if (finishedBlocks === BLOCKS.length) {
+    if (finishedBlocks === BLOCKS.pt.length) {
       options.unshift("📜 Emitir Certificado 📜");
 
       //Set emission date
